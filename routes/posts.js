@@ -53,6 +53,15 @@ router.put("/like/:id", async (req, res) => {
   }
 });
 // comment a post
+router.put("/comments/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    await post.updateOne({ $push: { comments: req.body.comment } });
+    res.status(200).json("comment added");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 // get a post
 // get timeline posts
 
