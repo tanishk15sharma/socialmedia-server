@@ -25,7 +25,33 @@ router.put("/:id", async (req, res) => {
   }
 });
 // delete a post
-// like a post
+router.delete("/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (post.userId !== req.body.userId) {
+      return res.status(401).json("you can delete only your post");
+    }
+    await post.deleteOne();
+    res.status(200).json("The post is deleted");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+// like/dislike a post
+router.put("/like/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post.likes.includes(req.body.userId)) {
+      await post.updateOne({ $push: { likes: req.body.userId } });
+      res.status(200).json("Post liked");
+    } else {
+      await post.updateOne({ $pull: { likes: req.body.userId } });
+      res.status(200).json("Post disliked");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 // comment a post
 // get a post
 // get timeline posts
