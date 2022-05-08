@@ -1,6 +1,16 @@
 const router = require("express").Router();
 const res = require("express/lib/response");
 const Post = require("../models/Post");
+
+router.get("/allposts", async (req, res) => {
+  try {
+    const allPost = await Post.find({});
+    return res.status(200).json({ allPost });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 // create post
 
 router.post("/", async (req, res) => {
@@ -73,7 +83,5 @@ router.get("/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
-
-// get timeline posts
 
 module.exports = router;

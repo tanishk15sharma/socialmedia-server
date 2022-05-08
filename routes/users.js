@@ -1,6 +1,15 @@
 const router = require("express").Router();
 const User = require("../models/User");
 
+router.get("/allUsers", async (req, res) => {
+  try {
+    const allUser = await User.find();
+    return res.status(200).json(allUser);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 // update user
 router.put("/:id", async (req, res) => {
   if (req.body.userId === req.params.id) {
