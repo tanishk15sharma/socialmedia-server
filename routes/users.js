@@ -41,6 +41,75 @@ router.get("/:id", async (req, res) => {
   }
 });
 // follow a user
+
+router.put("/follow/:id", async (req, res) => {
+  const userToFollowId = req.params.id;
+  const currentUserId = req.body.userId;
+
+  if (userToFollowId === currentUserId) {
+    return res.status(400).json("you cant follow yourself ");
+  }
+
+  const user = await User.findById(userToFollowId);
+  const currentUser = await User.findById(currentUserId);
+
+  if (user.followers.includes(currentUserId)) {
+    return res.status(400).json("you already following ");
+  }
+
+  try {
+    await User.findByIdAndUpdate(userToFollowId, {
+      $push: { followers: currentUserId },
+    });
+
+    await User.findByIdAndUpdate(
+      currentUserId,
+
+      {
+        $push: { following: userToFollowId },
+      }
+    );
+
+    return res.status(200).json("user has been followed");
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 // unfollow a user
+
+router.put("/unfollow/:id", async (req, res) => {
+  const userToFollowId = req.params.id;
+  const currentUserId = req.body.userId;
+
+  if (userToFollowId === currentUserId) {
+    return res.status(400).json("you cant unfollow yourself ");
+  }
+
+  const user = await User.findById(userToFollowId);
+  const currentUser = await User.findById(currentUserId);
+
+  if (!user.followers.includes(currentUserId)) {
+    return res.status(400).json("you dont follow this user ");
+  }
+
+  try {
+    await User.findByIdAndUpdate(userToFollowId, {
+      $pull: { followers: currentUserId },
+    });
+
+    await User.findByIdAndUpdate(
+      currentUserId,
+
+      {
+        $pull: { following: userToFollowId },
+      }
+    );
+
+    return res.status(200).json("user has been unfollowed");
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
 
 module.exports = router;
