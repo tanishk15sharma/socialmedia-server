@@ -20,7 +20,7 @@ mongoose
 // middleware
 app.use(express.json());
 app.use(helment());
-app.use(morgan("common"));
+app.use(morgan("dev"));
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);

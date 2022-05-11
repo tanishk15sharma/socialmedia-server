@@ -4,7 +4,7 @@ const Post = require("../models/Post");
 
 router.get("/allposts", async (req, res) => {
   try {
-    const allPost = await Post.find({});
+    const allPost = await Post.find().populate("user");
     return res.status(200).json({ allPost });
   } catch (err) {
     res.status(500).json(err);
@@ -63,6 +63,7 @@ router.put("/like/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 // comment a post
 router.put("/comments/:id", async (req, res) => {
   try {

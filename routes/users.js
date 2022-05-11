@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const User = require("../models/User");
-
+// all users
 router.get("/allUsers", async (req, res) => {
   try {
     const allUser = await User.find();
@@ -92,7 +92,7 @@ router.put("/unfollow/:id", async (req, res) => {
   const currentUserId = req.body.userId;
 
   if (userToFollowId === currentUserId) {
-    return res.status(400).json("you cant unfollow yourself ");
+    return res.status(400).json("you cant unfollow yourself");
   }
 
   const user = await User.findById(userToFollowId);
