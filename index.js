@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const helment = require("helmet");
 const morgan = require("morgan");
+const cors = require("cors");
 const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
 const postRoute = require("./routes/posts");
@@ -21,6 +22,7 @@ mongoose
 app.use(express.json());
 app.use(helment());
 app.use(morgan("dev"));
+app.use(cors());
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);

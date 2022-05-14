@@ -1,27 +1,38 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const generateToken = require("../utils/token");
+const middleWare = require("../middleware/middleware");
+
 // register
 
 router.post("/register", async (req, res) => {
   try {
-    // this will create new password
-    const salt = await bcrypt.genSalt(8);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
     // create new user
     const newUser = new User({
       username: req.body.username,
-      name: req.body.username,
+      name: req.body.name,
       email: req.body.email,
-      password: hashedPassword,
+      password: req.body.password,
     });
-
+    const token = generateToken(newUser._id);
     // store data/user
     const user = await newUser.save();
-    res.status(201).json(user);
+    res.status(201).json({
+      success: true,
+      message: "signup successfully",
+      user,
+      token,
+    });
     await user.save();
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "user already exixts",
+      });
+    }
+
     res.status(500).json(err);
   }
 });
@@ -36,11 +47,46 @@ router.post("/login", async (req, res) => {
       req.body.password,
       user.password
     );
-    !validPassword && res.status(400).json("Wrong password");
+    !validPassword &&
+      res.status(400).json({
+        success: false,
+        status: 400,
+        message: "Password wrong",
+      });
+    const token = generateToken(user._id);
 
-    res.status(200).json(user);
+    res.status(200).json({
+      success: true,
+      message: "login successfully",
+      user,
+      token,
+    });
   } catch (err) {
     console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+// for refresh
+router.get("/verify", middleWare, async (req, res) => {
+  const { id } = req.data;
+
+  try {
+    const user = await User.findOne({ _id: id });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "user fetched successfully",
+      user,
+    });
+  } catch (err) {
     res.status(500).json(err);
   }
 });

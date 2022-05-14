@@ -1,11 +1,25 @@
 const router = require("express").Router();
 const res = require("express/lib/response");
 const Post = require("../models/Post");
+const middleWare = require("../middleware/middleware");
+const { restart } = require("nodemon");
 
-router.get("/allposts", async (req, res) => {
+// get all posts
+router.get("/allposts", middleWare, async (req, res) => {
   try {
-    const allPost = await Post.find().populate("user");
+    const allPost = await Post.find();
+    console.log(allPost);
     return res.status(200).json({ allPost });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// get users post
+router.get("/userPosts/:id", middleWare, async (req, res) => {
+  try {
+    const userPosts = await Post.find({ userId: req.params.id });
+    res.status(200).json({ userPosts });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -13,8 +27,10 @@ router.get("/allposts", async (req, res) => {
 
 // create post
 
-router.post("/", async (req, res) => {
-  const newPost = new Post(req.body);
+router.post("/", middleWare, async (req, res) => {
+  const { id } = req.data;
+
+  const newPost = new Post({ userId: id, ...req.body });
   try {
     const savedPost = await newPost.save();
     res.status(200).json(savedPost);
@@ -22,11 +38,12 @@ router.post("/", async (req, res) => {
     res.status(500).json(err);
   }
 });
-// update post
-router.put("/:id", async (req, res) => {
+// update post (send post id)
+router.put("/:id", middleWare, async (req, res) => {
+  const { id } = req.data;
   try {
     const post = await Post.findById(req.params.id);
-    if (post.userId !== req.body.userId) {
+    if (post.userId !== id) {
       return res.status(401).json("you can update only your post");
     }
     await post.updateOne({ $set: req.body });
@@ -35,11 +52,12 @@ router.put("/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
-// delete a post
-router.delete("/:id", async (req, res) => {
+// delete a post (send post id)
+router.delete("/:id", middleWare, async (req, res) => {
+  const { id } = req.data;
   try {
     const post = await Post.findById(req.params.id);
-    if (post.userId !== req.body.userId) {
+    if (post.userId !== id) {
       return res.status(401).json("you can delete only your post");
     }
     await post.deleteOne();
@@ -49,14 +67,16 @@ router.delete("/:id", async (req, res) => {
   }
 });
 // like/dislike a post
-router.put("/like/:id", async (req, res) => {
+router.put("/like/:id", middleWare, async (req, res) => {
+  const { id } = req.data;
+  console.log(id);
   try {
     const post = await Post.findById(req.params.id);
-    if (!post.likes.includes(req.body.userId)) {
-      await post.updateOne({ $push: { likes: req.body.userId } });
+    if (!post.likes.includes(id)) {
+      await post.updateOne({ $push: { likes: id } });
       res.status(200).json("Post liked");
     } else {
-      await post.updateOne({ $pull: { likes: req.body.userId } });
+      await post.updateOne({ $pull: { likes: id } });
       res.status(200).json("Post disliked");
     }
   } catch (err) {
@@ -65,7 +85,7 @@ router.put("/like/:id", async (req, res) => {
 });
 
 // comment a post
-router.put("/comments/:id", async (req, res) => {
+router.put("/comments/:id", middleWare, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     await post.updateOne({ $push: { comments: req.body.comment } });

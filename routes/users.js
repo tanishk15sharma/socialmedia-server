@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const User = require("../models/User");
+const middleWare = require("../middleware/middleware");
 // all users
-router.get("/allUsers", async (req, res) => {
+router.get("/allUsers", middleWare, async (req, res) => {
   try {
     const allUser = await User.find();
     return res.status(200).json(allUser);
@@ -9,36 +10,6 @@ router.get("/allUsers", async (req, res) => {
     return res.status(500).json(err);
   }
 });
-
-// update user
-router.put("/:id", async (req, res) => {
-  if (req.body.userId === req.params.id) {
-    try {
-      const user = await User.findByIdAndUpdate(req.params.id, {
-        $set: req.body,
-      });
-      res.status(200).json("Account updated successfully");
-    } catch (err) {
-      return res.status(500).json(err);
-    }
-  } else {
-    return res.status(403).json("You can update only your account");
-  }
-});
-// delete user
-router.delete("/:id", async (req, res) => {
-  if (req.body.userId === req.params.id) {
-    try {
-      const user = await User.findByIdAndDelete(req.params.id);
-      res.status(200).json("Account has been deleted successfully");
-    } catch (err) {
-      return res.status(500).json(err);
-    }
-  } else {
-    return res.status(403).json("You can delete only your account");
-  }
-});
-
 // get a user
 router.get("/:id", async (req, res) => {
   try {
@@ -49,35 +20,56 @@ router.get("/:id", async (req, res) => {
     return res.status(500).json(err);
   }
 });
+
+// edit user
+router.put("/edit", middleWare, async (req, res) => {
+  const { id } = req.data;
+
+  try {
+    const user = await User.findByIdAndUpdate(id, {
+      $set: req.body,
+    });
+    res.status(200).json({ message: "Account updated successfully", user });
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+// delete user
+router.delete("/delete", middleWare, async (req, res) => {
+  const { id } = req.data;
+  try {
+    const user = await User.findByIdAndDelete(id);
+    res.status(200).json("Account has been deleted successfully");
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 // follow a user
 
-router.put("/follow/:id", async (req, res) => {
+router.put("/follow/:id", middleWare, async (req, res) => {
   const userToFollowId = req.params.id;
-  const currentUserId = req.body.userId;
 
-  if (userToFollowId === currentUserId) {
+  const { id } = req.data; //tanishk id
+
+  if (userToFollowId === id) {
     return res.status(400).json("you cant follow yourself ");
   }
 
-  const user = await User.findById(userToFollowId);
-  const currentUser = await User.findById(currentUserId);
+  const user = await User.findById(userToFollowId); //praveen
 
-  if (user.followers.includes(currentUserId)) {
+  if (user.followers.includes(id)) {
     return res.status(400).json("you already following ");
   }
 
   try {
     await User.findByIdAndUpdate(userToFollowId, {
-      $push: { followers: currentUserId },
+      $push: { followers: id },
     });
 
-    await User.findByIdAndUpdate(
-      currentUserId,
-
-      {
-        $push: { following: userToFollowId },
-      }
-    );
+    await User.findByIdAndUpdate(id, {
+      $push: { following: userToFollowId },
+    });
 
     return res.status(200).json("user has been followed");
   } catch (err) {
@@ -87,28 +79,28 @@ router.put("/follow/:id", async (req, res) => {
 
 // unfollow a user
 
-router.put("/unfollow/:id", async (req, res) => {
+router.put("/unfollow/:id", middleWare, async (req, res) => {
   const userToFollowId = req.params.id;
-  const currentUserId = req.body.userId;
 
-  if (userToFollowId === currentUserId) {
+  const { id } = req.data;
+
+  if (userToFollowId === id) {
     return res.status(400).json("you cant unfollow yourself");
   }
 
   const user = await User.findById(userToFollowId);
-  const currentUser = await User.findById(currentUserId);
 
-  if (!user.followers.includes(currentUserId)) {
+  if (!user.followers.includes(id)) {
     return res.status(400).json("you dont follow this user ");
   }
 
   try {
     await User.findByIdAndUpdate(userToFollowId, {
-      $pull: { followers: currentUserId },
+      $pull: { followers: id },
     });
 
     await User.findByIdAndUpdate(
-      currentUserId,
+      id,
 
       {
         $pull: { following: userToFollowId },
@@ -120,5 +112,7 @@ router.put("/unfollow/:id", async (req, res) => {
     return res.status(500).json(err);
   }
 });
+
+// get user friends
 
 module.exports = router;
