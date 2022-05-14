@@ -10,16 +10,6 @@ router.get("/allUsers", middleWare, async (req, res) => {
     return res.status(500).json(err);
   }
 });
-// get a user
-router.get("/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    const { password, updatedAt, ...other } = user._doc;
-    res.status(200).json(other);
-  } catch (err) {
-    return res.status(500).json(err);
-  }
-});
 
 // edit user
 router.put("/edit", middleWare, async (req, res) => {
@@ -50,13 +40,13 @@ router.delete("/delete", middleWare, async (req, res) => {
 router.put("/follow/:id", middleWare, async (req, res) => {
   const userToFollowId = req.params.id;
 
-  const { id } = req.data; //tanishk id
+  const { id } = req.data;
 
   if (userToFollowId === id) {
     return res.status(400).json("you cant follow yourself ");
   }
 
-  const user = await User.findById(userToFollowId); //praveen
+  const user = await User.findById(userToFollowId);
 
   if (user.followers.includes(id)) {
     return res.status(400).json("you already following ");
@@ -114,5 +104,38 @@ router.put("/unfollow/:id", middleWare, async (req, res) => {
 });
 
 // get user friends
+router.get("/myFriends", middleWare, async (req, res) => {
+  try {
+    let friendList = [];
+    const { id } = req.data;
+    const user = await User.findById(id);
+
+    const myFriends = await Promise.all(
+      user.following.map((friendId) => {
+        return User.findById(friendId);
+      })
+    );
+    // sending only essential 'key value'
+    myFriends.map((friend) => {
+      const { _id, username, name, profileImage } = friend;
+      friendList.push({ _id, username, name, profileImage });
+    });
+    res.status(200).json(friendList);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
+// get a user
+
+router.get("/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const { password, updatedAt, ...other } = user._doc;
+    res.status(200).json(other);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
 
 module.exports = router;
