@@ -103,29 +103,47 @@ router.put("/unfollow/:id", middleWare, async (req, res) => {
   }
 });
 
-// get user friends
-router.get("/myFriends", middleWare, async (req, res) => {
+// get user following
+router.get("/myFollowing/:userId", async (req, res) => {
   try {
-    let friendList = [];
-    const { id } = req.data;
-    const user = await User.findById(id);
+    let followingList = [];
+    const user = await User.findById(req.params.userId);
 
     const myFriends = await Promise.all(
-      user.following.map((friendId) => {
-        return User.findById(friendId);
-      })
+      user.following.map((friendId) => User.findById(friendId))
     );
-    // sending only essential 'key value'
     myFriends.map((friend) => {
       const { _id, username, name, profileImage } = friend;
-      friendList.push({ _id, username, name, profileImage });
+      followingList.push({ _id, username, name, profileImage });
     });
-    res.status(200).json(friendList);
+    return res.status(200).json({ followingList });
   } catch (err) {
     console.log(err);
     return res.status(500).json(err);
   }
 });
+
+// get user followers
+
+router.get("/myFollowers/:userId", async (req, res) => {
+  try {
+    let followersList = [];
+    const user = await User.findById(req.params.userId);
+
+    const myFriends = await Promise.all(
+      user.followers.map((friendId) => User.findById(friendId))
+    );
+    myFriends.map((friend) => {
+      const { _id, username, name, profileImage } = friend;
+      followersList.push({ _id, username, name, profileImage });
+    });
+    return res.status(200).json({ followersList });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
+
 // get a user
 
 router.get("/:id", async (req, res) => {
