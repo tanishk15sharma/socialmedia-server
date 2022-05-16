@@ -7,7 +7,7 @@ const { restart } = require("nodemon");
 // get all posts
 router.get("/allposts", middleWare, async (req, res) => {
   try {
-    const allPost = await Post.find();
+    const allPost = await Post.find().populate("userId");
     console.log(allPost);
     return res.status(200).json({ allPost });
   } catch (err) {
@@ -15,10 +15,12 @@ router.get("/allposts", middleWare, async (req, res) => {
   }
 });
 
-// get users post
+// get users post (userid)
 router.get("/userPosts/:id", middleWare, async (req, res) => {
   try {
-    const userPosts = await Post.find({ userId: req.params.id });
+    const userPosts = await Post.find({ userId: req.params.id }).populate(
+      "userId"
+    );
     res.status(200).json({ userPosts });
   } catch (err) {
     res.status(500).json(err);
@@ -41,6 +43,7 @@ router.post("/", middleWare, async (req, res) => {
 // update post (send post id)
 router.put("/:id", middleWare, async (req, res) => {
   const { id } = req.data;
+  console.log(id);
   try {
     const post = await Post.findById(req.params.id);
     if (post.userId !== id) {
@@ -88,8 +91,8 @@ router.put("/like/:id", middleWare, async (req, res) => {
 router.put("/comments/:id", middleWare, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    console.loh();
-    await post.updateOne({ $push: { comments: req.body.comment } });
+
+    await post.updateOne({ $push: { comments: req.body } });
     res.status(200).json("comment added");
   } catch (err) {
     res.status(500).json(err);
@@ -102,6 +105,7 @@ router.get("/:id", async (req, res) => {
     const post = await Post.findById(req.params.id);
     res.status(200).json(post);
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 });

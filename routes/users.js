@@ -156,4 +156,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// add post to bookmarks
+router.post("/bookmark/:postId", middleWare, async (req, res) => {
+  try {
+    const { id } = req.data;
+    const { postId } = req.params;
+
+    const user = await User.findById(id);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 module.exports = router;
