@@ -22,7 +22,7 @@ mongoose
 app.use(express.json());
 app.use(helment());
 app.use(morgan("dev"));
-app.use(cors());
+app.use(cors({ origin: "*" }));
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
