@@ -88,6 +88,7 @@ router.put("/like/:id", middleWare, async (req, res) => {
 router.put("/comments/:id", middleWare, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
+    console.loh()
     await post.updateOne({ $push: { comments: req.body.comment } });
     res.status(200).json("comment added");
   } catch (err) {
