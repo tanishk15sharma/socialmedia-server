@@ -1,8 +1,7 @@
 const router = require("express").Router();
-const res = require("express/lib/response");
+
 const Post = require("../models/Post");
 const middleWare = require("../middleware/middleware");
-const { restart } = require("nodemon");
 
 // get all posts
 router.get("/allposts", middleWare, async (req, res) => {
@@ -35,6 +34,7 @@ router.post("/", middleWare, async (req, res) => {
   const newPost = new Post({ userId: id, ...req.body });
   try {
     const savedPost = await newPost.save();
+
     res.status(200).json(savedPost);
   } catch (err) {
     res.status(500).json(err);
@@ -46,7 +46,8 @@ router.put("/:id", middleWare, async (req, res) => {
   console.log(id);
   try {
     const post = await Post.findById(req.params.id);
-    if (post.userId !== id) {
+    console.log(post.userId.toString());
+    if (post.userId._id.toString() !== id) {
       return res.status(401).json("you can update only your post");
     }
     await post.updateOne({ $set: req.body });
@@ -60,7 +61,7 @@ router.delete("/:id", middleWare, async (req, res) => {
   const { id } = req.data;
   try {
     const post = await Post.findById(req.params.id);
-    if (post.userId !== id) {
+    if (post.userId._id.toString() !== id) {
       return res.status(401).json("you can delete only your post");
     }
     await post.deleteOne();
