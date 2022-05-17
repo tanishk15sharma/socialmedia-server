@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "Hey I am new to social , lets connect asap!",
     },
+    website: {
+      type: String,
+      default: "",
+    },
     password: {
       type: String,
       required: true,
