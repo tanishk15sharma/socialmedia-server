@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const middleWare = require("../middleware/middleware");
+
 // all users
 router.get("/allUsers", middleWare, async (req, res) => {
   try {
@@ -16,11 +17,19 @@ router.put("/edit", middleWare, async (req, res) => {
   const { id } = req.data;
 
   try {
-    const user = await User.findByIdAndUpdate(id, {
-      $set: req.body,
-    });
-    await user.save()
-    res.status(200).json({ message: "Account updated successfully", user });
+    let user = await User.findById(id);
+
+    const { name, website, profileImage, bio } = req.body;
+    user.name = name || user.name;
+    user.website = website || user.website;
+    user.profileImage = profileImage || user.profileImage;
+    user.bio = bio || user.bio;
+
+    const updatedUser = await user.save();
+    console.log(updatedUser, user);
+    res
+      .status(200)
+      .json({ message: "Account updated successfully", updatedUser });
   } catch (err) {
     return res.status(500).json(err);
   }
