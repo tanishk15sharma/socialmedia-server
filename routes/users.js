@@ -171,19 +171,25 @@ router.post("/bookmark/:postId", middleWare, async (req, res) => {
   try {
     const { id } = req.data;
     const { postId } = req.params;
-    console.log(id, postId);
+
     const user = await User.findById(id);
-    console.log(user);
-    const index = user.bookmarks.findIndex(postId);
-    console.log(index);
-    if (index !== -1) {
-      const newList = user.bookmarks.splice(index, 1);
-      await newList.save();
-    } else {
-      user.bookmarks.push(postId);
-      await user.save();
-    }
-    res.status(200).json(user);
+    let updateBookmark = false;
+
+    await user.bookmarks.forEach(async (id, index) => {
+      if (id.toString() === postId.toString()) {
+        user.bookmarks.splice(index, 1);
+        updateBookmark = true;
+        await user.save();
+      }
+
+      if (updateBookmark) {
+        res.json({ success: true, bookmarks: user.bookmarks });
+      } else {
+        user.bookmarks.unshift(postId);
+        await user.save();
+        res.json({ success: true, bookmarks: user.bookmarks });
+      }
+    });
   } catch (err) {
     return res.status(500).json(err);
   }
