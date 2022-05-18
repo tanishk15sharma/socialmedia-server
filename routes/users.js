@@ -19,6 +19,7 @@ router.put("/edit", middleWare, async (req, res) => {
     const user = await User.findByIdAndUpdate(id, {
       $set: req.body,
     });
+    await user.save()
     res.status(200).json({ message: "Account updated successfully", user });
   } catch (err) {
     return res.status(500).json(err);
