@@ -45,10 +45,14 @@ const userSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
-    bookmarks: {
-      type: Array,
-      default: [],
-    },
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+        required: true,
+        default: [],
+      },
+    ],
   },
   { timestamps: true }
 );

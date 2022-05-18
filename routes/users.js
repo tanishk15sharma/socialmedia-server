@@ -171,8 +171,28 @@ router.post("/bookmark/:postId", middleWare, async (req, res) => {
   try {
     const { id } = req.data;
     const { postId } = req.params;
-
+    console.log(id, postId);
     const user = await User.findById(id);
+    console.log(user);
+    const index = user.bookmarks.findIndex(postId);
+    console.log(index);
+    if (index !== -1) {
+      const newList = user.bookmarks.splice(index, 1);
+      await newList.save();
+    } else {
+      user.bookmarks.push(postId);
+      await user.save();
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
+// get all bookmarks
+router.get("/allBookmarks", middleWare, async (req, res) => {
+  try {
+    const { id } = req.data;
   } catch (err) {
     return res.status(500).json(err);
   }
