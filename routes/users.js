@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const middleWare = require("../middleware/middleware");
-
+const Post = require("../models/Post");
 // all users
 router.get("/allUsers", middleWare, async (req, res) => {
   try {
@@ -156,7 +156,7 @@ router.get("/myFollowers/:userId", async (req, res) => {
 
 // get a user
 
-router.get("/:id", async (req, res) => {
+router.get("/profile/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     const { password, updatedAt, ...other } = user._doc;
@@ -183,11 +183,11 @@ router.post("/bookmark/:postId", middleWare, async (req, res) => {
       }
 
       if (updateBookmark) {
-        res.json({ success: true, bookmarks: user.bookmarks });
+        return res.json({ success: true, bookmarks: user.bookmarks });
       } else {
         user.bookmarks.unshift(postId);
         await user.save();
-        res.json({ success: true, bookmarks: user.bookmarks });
+        return res.json({ success: true, bookmarks: user.bookmarks });
       }
     });
   } catch (err) {
@@ -196,11 +196,23 @@ router.post("/bookmark/:postId", middleWare, async (req, res) => {
 });
 
 // get all bookmarks
-router.get("/allBookmarks", middleWare, async (req, res) => {
+router.get("/bookmarks", middleWare, async (req, res) => {
   try {
     const { id } = req.data;
+    const bookmarks = await User.findById(id)
+      .populate({
+        path: "bookmarks",
+        populate: {
+          path: "userId",
+          select: "name username profileImage",
+        },
+      })
+      .select("bookmarks -_id")
+      .lean();
+
+    return res.json({ success: true, bookmarks });
   } catch (err) {
-    return res.status(500).json(err);
+    res.status(500).json(err);
   }
 });
 
