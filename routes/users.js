@@ -181,15 +181,15 @@ router.post("/bookmark/:postId", middleWare, async (req, res) => {
         updateBookmark = true;
         await user.save();
       }
-
-      if (updateBookmark) {
-        return res.json({ success: true, bookmarks: user.bookmarks });
-      } else {
-        user.bookmarks.unshift(postId);
-        await user.save();
-        return res.json({ success: true, bookmarks: user.bookmarks });
-      }
     });
+
+    if (updateBookmark) {
+      return res.json({ success: true, bookmarks: user.bookmarks });
+    }
+
+    user.bookmarks.unshift(postId);
+    await user.save();
+    return res.json({ success: true, bookmarks: user.bookmarks });
   } catch (err) {
     return res.status(500).json(err);
   }

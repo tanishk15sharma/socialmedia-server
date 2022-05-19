@@ -43,10 +43,10 @@ router.post("/", middleWare, async (req, res) => {
 // update post (send post id)
 router.put("/:id", middleWare, async (req, res) => {
   const { id } = req.data;
-  console.log(id);
+
   try {
     const post = await Post.findById(req.params.id);
-    console.log(post.userId.toString());
+
     if (post.userId._id.toString() !== id) {
       return res.status(401).json("you can update only your post");
     }
