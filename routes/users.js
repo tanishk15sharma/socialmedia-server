@@ -19,11 +19,12 @@ router.put("/edit", middleWare, async (req, res) => {
   try {
     let user = await User.findById(id);
 
-    const { name, website, profileImage, bio } = req.body;
+    const { name, website, profileImage, bio, profileCover } = req.body;
     user.name = name || user.name;
     user.website = website || user.website;
     user.profileImage = profileImage || user.profileImage;
     user.bio = bio || user.bio;
+    user.profileCover = profileCover || user.profileCover;
 
     const updatedUser = await user.save();
     console.log(updatedUser, user);

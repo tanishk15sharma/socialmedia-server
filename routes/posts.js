@@ -7,7 +7,7 @@ const middleWare = require("../middleware/middleware");
 router.get("/allposts", middleWare, async (req, res) => {
   try {
     const allPost = await Post.find().populate("userId");
-    console.log(allPost);
+
     return res.status(200).json({ allPost });
   } catch (err) {
     res.status(500).json(err);
@@ -73,7 +73,7 @@ router.delete("/:id", middleWare, async (req, res) => {
 // like/dislike a post
 router.put("/like/:id", middleWare, async (req, res) => {
   const { id } = req.data;
-  console.log(id);
+
   try {
     const post = await Post.findById(req.params.id);
     if (!post.likes.includes(id)) {
